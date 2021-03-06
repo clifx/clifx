@@ -1,0 +1,9 @@
+#!/bin/sh
+
+. "$(dirname "$0")/_/husky.sh"
+
+set -eu
+
+npx --no-install lint-staged
+
+npx --no-install pretty-quick --staged

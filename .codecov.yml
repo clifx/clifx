@@ -1,0 +1,5 @@
+flags:
+  dummy:
+    paths:
+      - packages/dummy
+    carryforward: true

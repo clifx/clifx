@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  ci:
+    runs-on: ubuntu-18.04
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Checkout
+        run: ./scripts/ci/checkout.sh
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - name: Bootstrap
+        run: |
+          yarn --frozen-lockfile
+          yarn lerna bootstrap
+      - name: Detect Changes
+        run: ./scripts/ci/changed.sh
+      - name: Build
+        if: env.CHANGED_PROJECT_COUNT > 0
+        run: yarn --silent run -- lerna run build --loglevel=warn --since ${LAST_SUCCESSFUL_SHA} --include-dependencies
+      - name: Test
+        if: env.CHANGED_PROJECT_COUNT > 0
+        run: yarn --silent run -- lerna run test --loglevel=warn --since ${LAST_SUCCESSFUL_SHA} --parallel -- --ci --coverage
+      # - name: Upload Coverage to Codecov
+      #   continue-on-error: true
+      #   if: env.CHANGED_PROJECT_COUNT > 0
+      #   run: |
+      #     curl --silent --location "https://codecov.io/bash" --output "/tmp/codecov.sh"
+      #     chmod u+x "/tmp/codecov.sh"
+      #     yarn --silent run -- lerna exec --loglevel=warn --parallel -- '${LERNA_ROOT_PATH}/scripts/lerna/codecov-for-package.sh'
