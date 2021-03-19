@@ -1,5 +1,5 @@
 flags:
-  dummy:
+  core:
     paths:
-      - packages/dummy
+      - packages/core
     carryforward: true
