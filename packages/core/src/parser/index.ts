@@ -4,9 +4,13 @@ import { isDefined, pushAt } from '../utils';
 import { Args } from './args';
 import { Result, ResultFactory } from './result';
 
-export function parse<ParameterMap extends { [id: string]: Parameter }>(
+export function parse<
+  ParameterMap extends { [id: string]: Parameter },
+  ParentParameterMap extends ParameterMap = never
+>(
   argv: string[],
-  command: Pick<Command, 'parameters' | 'subcommands'>
+  command: Pick<Command, 'parameters' | 'subcommands'>,
+  parentdResult?: Result<ParentParameterMap>
 ): Result<ParameterMap> {
   const { parameters, subcommands } = command;
 

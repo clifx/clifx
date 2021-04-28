@@ -8,7 +8,7 @@ export function Parameter<Value>(
     ...definition,
   };
 
-  const factory: ParameterFactory<Value> = {
+  const factory: ParameterFactory<Value, any> = {
     defaultValue(defaultValue) {
       def.takesValue = true;
       def.defaultValue = defaultValue;
@@ -51,6 +51,10 @@ export function Parameter<Value>(
         throw new Error();
       }
 
+      if (isDefined(def.multiple)) {
+        throw new Error();
+      }
+
       if (position < 1) {
         throw new Error();
       }
@@ -66,7 +70,19 @@ export function Parameter<Value>(
       def.usage = usage;
       return this;
     },
+    global() {
+      if (def.position) {
+        throw new Error();
+      }
+
+      def.global = true;
+      return this;
+    },
     multiple() {
+      if (def.position) {
+        throw new Error();
+      }
+
       def.multiple = true;
       return this;
     },

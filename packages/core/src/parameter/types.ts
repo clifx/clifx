@@ -14,6 +14,7 @@ export interface Parameter<Value = unknown> {
   info?: string;
   usage?: string[];
 
+  global?: boolean;
   multiple?: boolean;
   multipleValue?: boolean;
   takesValue?: boolean;
@@ -26,44 +27,64 @@ export interface Parameter<Value = unknown> {
   requires?: string | string[];
 }
 
+type ParameterConfig = keyof Parameter;
+
 export type ParameterValue<P> = P extends Parameter<infer V> ? V : never;
 
 type IfKnown<Type> = unknown extends Type ? unknown : Type;
 
-export type ParameterFactory<Value> = {
+export type ParameterFactory<Value, Config extends ParameterConfig = never> = {
   /**
    * sets `takesValue`
    */
-  defaultValue: <T extends IfKnown<Value>>(value: T) => ParameterFactory<T>;
+  defaultValue: <T extends IfKnown<Value>>(
+    value: T
+  ) => ParameterFactory<T, Config | 'defaultValue' | 'takesValue'>;
   /**
    * can not be used with `position`
    */
-  long: (long: string) => ParameterFactory<Value>;
-  longAliases: (longAliases: string[]) => ParameterFactory<Value>;
+  long: (long: string) => ParameterFactory<Value, Config | 'long'>;
+  longAliases: (
+    longAliases: string[]
+  ) => ParameterFactory<Value, Config | 'longAliases'>;
   /**
    * can not be used with `position`
    */
-  short: (short: AlphaNum) => ParameterFactory<Value>;
-  shortAliases: (shortAliases: AlphaNum[]) => ParameterFactory<Value>;
+  short: (short: AlphaNum) => ParameterFactory<Value, Config | 'short'>;
+  shortAliases: (
+    shortAliases: AlphaNum[]
+  ) => ParameterFactory<Value, Config | 'shortAliases'>;
   /**
    * can not be used with `long` or `short`
    */
-  position: (position: number) => ParameterFactory<Value>;
-  info: (info: string) => ParameterFactory<Value>;
-  usage: (usage: string[]) => ParameterFactory<Value>;
-  multiple: () => ParameterFactory<Value>;
+  position: (position: number) => ParameterFactory<Value, Config | 'position'>;
+  info: (info: string) => ParameterFactory<Value, Config | 'info'>;
+  usage: (usage: string[]) => ParameterFactory<Value, Config | 'usage'>;
+
+  global: () => ParameterFactory<Value, Config | 'global'>;
+  multiple: () => ParameterFactory<Value, Config | 'multiple'>;
   /**
    * sets `takesValue`
    */
-  multipleValue: () => ParameterFactory<Value>;
-  takesValue: () => ParameterFactory<Value>;
-  required: () => ParameterFactory<Value>;
+  multipleValue: () => ParameterFactory<
+    Value,
+    Config | 'multipleValue' | 'takesValue'
+  >;
+  takesValue: () => ParameterFactory<Value, Config | 'takesValue'>;
+  required: () => ParameterFactory<Value, Config | 'required'>;
+
   parse: <T extends IfKnown<Value>>(
     parse: (value: string) => T
-  ) => ParameterFactory<T>;
-  valid: (valid: (value: string) => boolean) => ParameterFactory<Value>;
-  conflicts: (conflicts: string | string[]) => ParameterFactory<Value>;
-  requires: (requires: string | string[]) => ParameterFactory<Value>;
+  ) => ParameterFactory<T, Config | 'parse'>;
+  valid: (
+    valid: (value: string) => boolean
+  ) => ParameterFactory<Value, Config | 'valid'>;
+  conflicts: (
+    conflicts: string | string[]
+  ) => ParameterFactory<Value, Config | 'conflicts'>;
+  requires: (
+    requires: string | string[]
+  ) => ParameterFactory<Value, Config | 'requires'>;
 
   create: <T extends IfKnown<Value>>(definition?: Parameter<T>) => Parameter<T>;
 };

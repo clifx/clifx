@@ -1,7 +1,30 @@
 import { Parameter } from '../parameter/types';
-import { Command, CommandFactory } from './types';
+import type { AlphaNum } from '../utils/alphanum';
+import { CommandFactory } from './types';
 
-export function Command(id: string): CommandFactory {
+export abstract class Command {
+  static id: string;
+
+  static long: string;
+  static short: AlphaNum;
+
+  static info: string;
+  static usage: string[];
+
+  static parameters: {
+    [id: string]: Parameter;
+  };
+
+  static subcommands: string[] = [];
+
+  id: string;
+
+  constructor() {
+    this.id = new.target.id || new.target.name.toLowerCase();
+  }
+}
+
+export function Commandx(id: string): CommandFactory {
   const cmd: Command<{ [id: string]: Parameter }> = {
     id,
     parameters: {},
